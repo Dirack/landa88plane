@@ -1,0 +1,64 @@
+3.1.1	sfvfsacrsnh	test/constLayersModels/model3:	rodolfo@rodolfo-Nitro-AN515-54	Fri Jun 17 19:41:29 2022
+
+	d2=0.025
+	n2=121
+	o1=1
+	d3=1
+	n3=4
+	o2=1.5
+	label1="t0"
+	data_format="native_float"
+	o3=0
+	label2="m0"
+	label3="parameters"
+	esize=4
+	C0=0.5
+	in="/home/rodolfo/rsfdata/test/constLayersModels/model3/parametersCube.rsf@"
+	temp0=10
+	unit1="s"
+	unit2="km"
+	unit3="RN, RNIP, BETA, Semblance"
+	d1=0.008
+	n1=251
+3.1.1	sfput	landa88plane/test/model3:	rodolfo@rodolfo-Nitro-AN515-54	Fri Jun 17 22:12:07 2022
+
+	data_format="native_float"
+	in="/home/rodolfo/rsfdata/parametersCube.rsf@"
+3.1.1	sfwindow	landa88plane/test/model3:	rodolfo@rodolfo-Nitro-AN515-54	Fri Jun 17 22:12:54 2022
+
+	d2=0.025
+	n2=121
+	o1=1
+	d3=1
+	o2=1.5
+	label1="t0"
+	n3=1
+	data_format="native_float"
+	o3=1
+	label2="m0"
+	label3="parameters"
+	f3=1
+	esize=4
+	in="stdout"
+	unit1="s"
+	unit2="km"
+	unit3="RN, RNIP, BETA, Semblance"
+	d1=0.008
+	n1=251
+	in="stdin"
+
+3.1.1	sfgetparameter	landa88plane/test/model3:	rodolfo@rodolfo-Nitro-AN515-54	Fri Jun 17 22:12:54 2022
+
+	n2=1
+	data_format="native_float"
+	esize=4
+	in="/home/rodolfo/rsfdata/landa88plane/test/model3/rnips.rsf@"
+	n1=14
+3.1.1	sfput	landa88plane/test/model3:	rodolfo@rodolfo-Nitro-AN515-54	Sat Jun 18 12:05:00 2022
+
+	data_format="native_float"
+	--out=stdout
+	in="stdout"
+	in="stdin"
+
+¨èˆ?ÇKw?¡gc?joˆ?ª€z?`TŠ?=,„?œ¢Ã?¤´?®Ø¿?Ì¡Õ?~S°?ÑÕñ?ÚÉÝ?
