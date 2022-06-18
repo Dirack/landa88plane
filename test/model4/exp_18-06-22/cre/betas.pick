@@ -1,0 +1,13 @@
+rodolfo@rodolfo-Nitro-AN515-54:~/madagascar-3.1.1/user/landa88plane/test/model4$ 
+~> <betas0.rsf sfdisfil
+   0:       0.01331     0.005188    -0.002748     0.009741            0
+   5:         0.018    -0.006127
+rodolfo@rodolfo-Nitro-AN515-54:~/madagascar-3.1.1/user/landa88plane/test/model4$ 
+~> <betas1.rsf sfdisfil
+   0:      0.005043    -0.005263     -0.01235    -0.007719     0.003687
+   5:      0.006482            0
+rodolfo@rodolfo-Nitro-AN515-54:~/madagascar-3.1.1/user/landa88plane/test/model4$ 
+~> <betas2.rsf sfdisfil
+   0:      0.001531     0.002242    -0.003535      0.02131     0.009176
+   5:    -0.0008486        0.004
+
