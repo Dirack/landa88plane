@@ -1,0 +1,32 @@
+3.1.1	sfmath	landa88plane/test/model4:	rodolfo@rodolfo-Nitro-AN515-54	Thu Jun 16 19:56:49 2022
+
+	x2=1
+	d2=0.01
+	n2=1001
+	o1=0
+	o2=-2
+	data_format="native_float"
+	esize=4
+	in="/home/rodolfo/rsfdata/landa88plane/test/model4/constv.rsf@"
+	x1=0
+	d1=0.01
+	n1=301
+3.1.1	sflanda88_plane	landa88plane/test/model4:	rodolfo@rodolfo-Nitro-AN515-54	Sat Jun 18 16:01:38 2022
+
+	d2=0.45
+	o1=-2
+	n2=3
+	o2=1
+	data_format="native_float"
+	esize=4
+	in="/home/rodolfo/rsfdata/landa88plane/test/model4/zspline_0.rsf@"
+	d1=0.5
+	n1=21
+3.1.1	sfput	landa88plane/test/model4:	rodolfo@rodolfo-Nitro-AN515-54	Sat Jun 18 16:05:49 2022
+
+	data_format="native_float"
+	--out=stdout
+	in="stdout"
+	in="stdin"
+
+d`€?d`€?d`€?d`€?d`€?d`€?d`€?d`€?$X€?˜?'.€?Æ€?xÄ€?4.€?4.€?4.€?4.€?4.€?4.€?4.€?4.€?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?š™¹?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?33ó?
