@@ -156,7 +156,7 @@ Note: sumAmplitudes and sumAmplitudes2 variables are changed inside function
 
 		im = (int) (m/d[2]);
 
-		tetai = (int) round((double) creTimeApproximation(h,m,v0,t0,m0,RNIP,BETA,true)/d[0]);
+		tetai = (int) round((double) creTimeApproximation(h,m,v0,t0,m0,RNIP,BETA,false)/d[0]);
 
 		if(tetai > n[0] || tetai < 0 || im < 0 || im > n[2]){
 			sa += 0.;
@@ -266,6 +266,85 @@ ray position is (x=m0,z=0) at acquisition surface.
 
 }
 
+float calculateRNIPWithHubralLaws(float dt,
+                                  float** traj, /* Normal ray trajectory */
+                                  int nt, /* Normal ray times samples */
+                                  float *v, /* layers velocities */
+                                  int nv, /* Number of layers */
+                                  int itf, /* Interface index */
+                                  float *sz, /* Splines nodepoints */
+                                  int *nsz, /* Number of nodepoints */
+                                  float *osz, /* Nodepoints origin */
+                                  float *dsz /* Nodepoints sampling */)
+/*< TODO >*/
+{
+	int i, j; // loop counter
+        float rnip=0.; // RNIP parameter
+        float vt, vi; // velocities
+        float x[2]; // (z,x) position vector
+        float zr, zi, vel;
+        int length=0, it; 
+        int pass=0;
+	float *szz;
+	float *xs;
+	float **coef;
+	int l;
+	float z[1];
+
+	xs = sf_floatalloc(nsz[0]);
+	szz = sf_floatalloc(nsz[0]);
+
+	for(i=0;i<nsz[0];i++){
+		xs[i] = i*dsz[0]+osz[0];
+		szz[i] = sz[(itf-1)*nsz[0]+i];
+        }
+
+        /* Calculate coefficients matrix (interfaces interpolation) */
+	coef = sf_floatalloc2(4*(nsz[0]-1),1);
+	calculateSplineCoeficients(nsz[0],xs,szz,coef[0]);
+
+        // XXX if nv=1, zero division error!
+        if(nv<=1) sf_error("%s: %d: nv can't be 1 or less! It will cause a zero division error!",__FILE__,__LINE__);
+
+
+        x[0] = traj[0][0];
+        x[1] = traj[0][1];
+        vt = v[itf];
+        rnip+=vt*dt;
+	for(i=1;i<nt;i++){
+                x[0] = traj[i][0];
+                x[1] = traj[i][1];
+
+                if(itf > 0){
+			l = (int) x[1]/dsz[0];
+                        calcInterfacesZcoord(z,1,x[1]-x[l],l,coef);
+
+                        if((traj[i][0]-z[0])<0.001){
+                                rnip=rnip*vt/v[itf-1];
+                                itf--;
+                                vt=v[itf];
+				if(itf>0){
+					for(j=0;j<nsz[0];j++){
+						szz[j] = sz[(itf-1)*nsz[0]+j];
+					}
+
+					/* Calculate coefficients matrix (interfaces interpolation) */
+					calculateSplineCoeficients(nsz[0],xs,szz,coef[0]);
+
+				}
+                        }
+                }
+
+                /* Propagation law */
+                rnip+=vt*dt;
+        }
+
+	free(xs); free(szz); free(coef);
+
+        return rnip;
+
+}
+
 float forwardModeling(
 			   float** s, /* NIP sources matrix (z,x) pairs */
 			   float v0, /* Near surface velocity */
@@ -282,7 +361,16 @@ float forwardModeling(
 			   float ***data, /* Seismic data cube A(m,h,t) */
 			   int *data_n, /* Data number of samples */
 			   float *data_o, /* Data axis origin */
-			   float *data_d /* Data sampling */)
+			   float *data_d, /* Data sampling */
+			   int itf,
+			   float *sv,
+			   int nsv,
+			   float *sz,
+			   int *nsz,
+			   float *osz,
+			   float *dsz,
+			   float *otrnip,
+			   float *otbeta)
 /*< Return Average Semblance from all NIP sources.
 Values of x and p are changed inside the function.
 The trajectory traj is stored as follows: {z0,y0,z1,y1,z2,y2,...} in 2-D
@@ -313,6 +401,7 @@ performed in obtained ray trajectory to calculate RNIP and BETA angle.
 	float semb;
 	float tt;
 	int k;
+	float rr[3]={1,1.95,2.01};
 
 	x = sf_floatalloc(2);
 
@@ -332,13 +421,16 @@ performed in obtained ray trajectory to calculate RNIP and BETA angle.
 
                         /* Calculate RNIP */
 			rnip = calculateRNIPWithDynamicRayTracing(rt,dt,it,traj,v0);
+			//rnip = calculateRNIPWithHubralLaws(dt,traj,it,sv,nsv,itf,sz,nsz,osz,dsz);
 
 			/* Calculate BETA */
 			beta = calculateBetaWithRayTrajectory(x,traj,it);
 
+			otrnip[is]=rnip; otbeta[is]=beta;
 			//if(rnip<0.)
-			sf_warning("rnip=%f beta=%f m0=%f t0=%f z=%f x=%f",rnip,beta,traj[it][1],2*it*dt,s[is][0],s[is][1]);
-			if(rnip>0.3 && rnip < 5.){
+			//sf_warning("rnip=%f beta=%f m0=%f t0=%f z=%f x=%f",rnip,beta,traj[it][1],2*it*dt,s[is][0],s[is][1]);
+			//if(fabs(rnip-rr[itf])<0.5){
+			if(rnip>0.3 && rnip<5.){
 				semb=0.;
 				for(k=0;k<31;k++){
 					tt = (2*it*dt)+(k-16)*dt;

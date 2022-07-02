@@ -119,7 +119,7 @@ float second_derivative(void *par, float *n, float *x, float v)
 {
 	raytrace rt;
 	float vpdx, vmdx;
-	float dx=0.001;
+	float dx=0.01;
 	float tmp[2];
 	float der[3];
 	float fx[3];
@@ -141,8 +141,8 @@ float second_derivative(void *par, float *n, float *x, float v)
 	tmp[1]=x[1]+n[0];
 	fx[0] = sqrtf(1./grid2_vel(rt->grd2,tmp));	
 
-	second_deriv(0.001,fx,der,3);
-	//sf_warning("v=%f %f %f d=%f",fx[0],fx[1],fx[2],der[1]);
+	second_deriv(0.01,fx,der,3);
+	//if(der[1]>0.001 || der[1] <-0.001) sf_warning("v=%f %f %f d=%f %f",fx[0],fx[1],fx[2],der[1],(fx[0]-2*fx[1]+fx[2])/(dx*dx));
 	//sf_warning("ddnv=%f d=%f",der[1],(fx[0]-2*fx[1]+fx[2])/(dx*dx));
 	//der[1]=(fx[0]-2*fx[1]+fx[2])/(dx*dx);
 	return der[1];

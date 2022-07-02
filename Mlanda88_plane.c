@@ -53,6 +53,9 @@ int main(int argc, char* argv[])
 	float *t0; // t0's for normal rays
 	float *RNIP; // Rnip parameters vector
 	float *BETA; // Beta parameters vector
+	float *otrnip;
+	float *otbeta;
+	float *otsemb;
 	float *sv; // Layer's Velocity
 	int nsv;
 	float minvel; // Minimun layer velocity
@@ -82,6 +85,7 @@ int main(int argc, char* argv[])
 	sf_file betas; // BETA parameter for each m0
 	sf_file vspline; // Layers velocity (output)
 	sf_file datafile; // Prestack data A(m,h,t)
+	sf_file otsemb_file;
 
 	sf_init(argc,argv);
 
@@ -97,6 +101,7 @@ int main(int argc, char* argv[])
 	rnips = sf_input("rnips");
 	betas = sf_input("betas");
 	datafile = sf_input("data");
+	otsemb_file = sf_output("otsemb");
 
 	/* Velocity model: get 2D grid parameters */
 	if(!sf_histint(vel,"n1",n)) sf_error("No n1= in input");
@@ -193,6 +198,10 @@ int main(int argc, char* argv[])
 	RNIP = sf_floatalloc(ns);
 	sf_floatread(RNIP,ns,rnips);
 	BETA = sf_floatalloc(ns);
+	otrnip = sf_floatalloc(ns);
+	otbeta = sf_floatalloc(ns);
+	otsemb = sf_floatalloc(nit);
+	//for(im=0;im<ns;im++) BETA[im]=0.;
 	sf_floatread(BETA,ns,betas);
 
 	/* get slowness squared (Background model) */
@@ -253,6 +262,8 @@ int main(int argc, char* argv[])
 		for(im=0;im<ns;im++){
 			ots[im][0]=s[im][0];
 			ots[im][1]=s[im][1];
+			otrnip[im] = RNIP[im];
+			otbeta[im] = BETA[im];
 		}
 		otsv[0]=sv[0];
 
@@ -277,7 +288,7 @@ int main(int argc, char* argv[])
 
 			/* Forward modeling */
 			// TODO change tmis variable name to semb (Semblance)
-			tmis=forwardModeling(s,v0,t0,m0,RNIP,BETA,n,o,d,slow,a,ns,data,data_n,data_o,data_d);
+			tmis=forwardModeling(s,v0,t0,m0,RNIP,BETA,n,o,d,slow,a,ns,data,data_n,data_o,data_d,itf,cnewv,nsv,sz,nsz,osz,dsz,otrnip,otbeta);
 		
 			if(fabs(tmis) > fabs(tmis0) ){
 				otmis = fabs(tmis);
@@ -285,11 +296,16 @@ int main(int argc, char* argv[])
 				for(im=0;im<ns;im++){
 					ots[im][0]=s[im][0];
 					ots[im][1]=s[im][1];
+					//otrnip[im]=RNIP[im];
+					//otbeta[im]=BETA[im];
+					sf_warning("RNIP=%f BETA=%f",otrnip[im],otbeta[im]);
 				}
 				for(im=0;im<nsv;im++)
 					otsv[im]=cnewv[im];
 				tmis0 = fabs(tmis);
 			}
+
+			otsemb[q]=fabs(otmis);
 
 			/* VFSA parameters update condition */
 			deltaE = fabs(tmis) - Em0;
@@ -334,4 +350,7 @@ int main(int argc, char* argv[])
 	sf_floatwrite(otsv,nsv,vspline);
 	sf_floatwrite(otsz,nsz[0]*nsz[1],zspline);
 	sf_floatwrite(slow,nm,velinv);
+
+	/* Write semblance evolution */
+	sf_floatwrite(otsemb,nit,otsemb_file);
 }
