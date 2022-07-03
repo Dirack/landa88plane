@@ -16,6 +16,8 @@
 # 
 # License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 
+import os
+
 # Madagascar Package
 from rsf.proj import *
 
@@ -30,6 +32,12 @@ trueModel='trueModel'
 stackedSection='stackedSection'
 parametersCube='parametersCube'
 interpolatedDataCube='interpolatedDataCube'
+
+SRCDIR = os.getenv('RSFSRC')+'/user/creGatherStack/experiments/constLayersModels/model4/backup/'
+
+Flow(interpolatedDataCube,SRCDIR+interpolatedDataCube+'.rsf','put --out=stdout')
+Flow(parametersCube,SRCDIR+parametersCube+'.rsf','put --out=stdout')
+Flow(stackedSection,SRCDIR+stackedSection+'.rsf','put --out=stdout')
 
 # Original velocity model
 xmax = 6.0

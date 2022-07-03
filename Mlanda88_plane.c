@@ -1,4 +1,4 @@
-/* Landa 1988 experiment: VFSA velocity inversion based on stereotomography and NIP tomography strategies
+/* Landa 1988 experiment for PLANE INTERFACES: VFSA velocity inversion based on stereotomography and NIP tomography strategies
 
 This program is a reproduction of the experiment in the article 'A method for determination of velocity and depth from seismic reflection data' from Landa 1988.
 
@@ -53,11 +53,11 @@ int main(int argc, char* argv[])
 	float *t0; // t0's for normal rays
 	float *RNIP; // Rnip parameters vector
 	float *BETA; // Beta parameters vector
-	float *otrnip;
-	float *otbeta;
-	float *otsemb;
+	float *otrnip; // RNIP optimized
+	float *otbeta; // Beta optimized
+	float *otsemb; // Semblance optimized
 	float *sv; // Layer's Velocity
-	int nsv;
+	int nsv; // Number of layers velocities
 	float minvel; // Minimun layer velocity
 	float maxvel; // Maximum layer velocity
 	bool first; // First interface inversion?
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 	int data_n[3]; // n1, n2, n3 dimension of data
 	float data_o[3]; // o1, o2, o3 axis origins of data
 	float data_d[3]; // d1, d2, d3 sampling of data
-	int itf;
+	int itf; // Interfaces index
 	sf_file shots; // NIP sources (z,x)
 	sf_file vel; // background velocity model
 	sf_file vz_file; // Initial Layer velocity
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 	sf_file betas; // BETA parameter for each m0
 	sf_file vspline; // Layers velocity (output)
 	sf_file datafile; // Prestack data A(m,h,t)
-	sf_file otsemb_file;
+	sf_file otsemb_file; // Optimized semblance
 
 	sf_init(argc,argv);
 
@@ -201,7 +201,6 @@ int main(int argc, char* argv[])
 	otrnip = sf_floatalloc(ns);
 	otbeta = sf_floatalloc(ns);
 	otsemb = sf_floatalloc(nit);
-	//for(im=0;im<ns;im++) BETA[im]=0.;
 	sf_floatread(BETA,ns,betas);
 
 	/* get slowness squared (Background model) */
@@ -248,13 +247,10 @@ int main(int argc, char* argv[])
 	sf_putint(vspline,"n1",nsv);
 	sf_putint(vspline,"n2",1);
 
-	sf_warning("oi");
 	/* Build initial velocity model and setup NIP sources */
 	if(!base){
 		buildSlownessModelFromVelocityModel(slow,n,o,d,sv,sz,nsz,osz,dsz,first,base,itf);
-		sf_warning("oi");
 		modelSetup(s, ns,  m0, t0, BETA,  a,  n,  d,  o,  slow);
-		sf_warning("oi");
 		tmis0=0.;
 		otmis=tmis0;
 
@@ -296,8 +292,6 @@ int main(int argc, char* argv[])
 				for(im=0;im<ns;im++){
 					ots[im][0]=s[im][0];
 					ots[im][1]=s[im][1];
-					//otrnip[im]=RNIP[im];
-					//otbeta[im]=BETA[im];
 					sf_warning("RNIP=%f BETA=%f",otrnip[im],otbeta[im]);
 				}
 				for(im=0;im<nsv;im++)
