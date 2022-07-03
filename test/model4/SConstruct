@@ -170,24 +170,15 @@ for i in range(3):
 	sz = zspline
 	first = 'n'
 
-### Basement ####
-Flow('svv.asc',None,
-	'''
-	echo 1.5 1.70 1.6 2. n1=4 data_format=ascii_float in=${TARGETS[0]}
-	''')
-
-# Layer's velocity
-Flow('svv','svv.asc',
-	'''
-	dd type=float form=native
-	''')
-
-Flow(['velinv_res','vspline_res','zspline_res'],[model,t0s,m0s,rnips,betas,sv,interpolatedDataCube,shotsfile,sz],
-	    '''
-	    landa88_plane t0s=${SOURCES[1]} m0s=${SOURCES[2]} rnips=${SOURCES[3]} betas=${SOURCES[4]} sv=${SOURCES[5]} vspline=${TARGETS[1]} data=${SOURCES[6]} shotsfile=${SOURCES[7]} sz=${SOURCES[8]} zspline=${TARGETS[2]} v0=1.508 nit=%d c0=0.2 temp0=2 base=y first=n itf=2
-	    ''')
+#### Model ####
+Flow('interfaces_spline',zspline,
+        '''
+        spline o1=-2 d1=0.01 n1=1001
+        ''')
 
 velinv = 'velinv_res'
+
+Flow(velinv,[sv,'interfaces_spline'],'modelbuild nz=301 dz=0.01 oz=0 sz=${SOURCES[1]}')
 
 ### Plot results ####
 Flow('pick.txt',picks,'/usr/bin/cat $SOURCES')
