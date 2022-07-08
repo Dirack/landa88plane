@@ -78,7 +78,7 @@ om0 = float(ARGUMENTS.get('om0',1.5))
 dm0 = float(ARGUMENTS.get('dm0',0.025))
 nm0 = int(ARGUMENTS.get('nm0',121))
 aperture = int(ARGUMENTS.get('aperture',30))
-cds = bool(ARGUMENTS.get('cds',False))
+cds = ARGUMENTS.get('cds','n')
 
 ### velocity inversion using NIP tomography ###
 
@@ -168,8 +168,8 @@ for i in range(2):
 		first='y'
 	Flow([velinv,vspline,zspline,otsemb],[model,t0s,m0s,rnips,betas,sv,interpolatedDataCube,shotsfile,sz],
 	    '''
-	    landa88_plane t0s=${SOURCES[1]} m0s=${SOURCES[2]} rnips=${SOURCES[3]} betas=${SOURCES[4]} sv=${SOURCES[5]} vspline=${TARGETS[1]} data=${SOURCES[6]} shotsfile=${SOURCES[7]} sz=${SOURCES[8]} zspline=${TARGETS[2]} v0=1.508 nit=%d c0=0.2 temp0=2 minvel=%g maxvel=%g first=%s itf=%d otsemb=${TARGETS[3]}
-	    ''' % (nit,minvel[i],maxvel[i],first,i))
+	    landa88_plane t0s=${SOURCES[1]} m0s=${SOURCES[2]} rnips=${SOURCES[3]} betas=${SOURCES[4]} sv=${SOURCES[5]} vspline=${TARGETS[1]} data=${SOURCES[6]} shotsfile=${SOURCES[7]} sz=${SOURCES[8]} zspline=${TARGETS[2]} v0=1.508 nit=%d c0=0.2 temp0=2 minvel=%g maxvel=%g first=%s itf=%d otsemb=${TARGETS[3]} cds=%s
+	    ''' % (nit,minvel[i],maxvel[i],first,i,cds))
 
 	model = velinv
 	sv = vspline

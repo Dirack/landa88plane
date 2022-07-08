@@ -15,6 +15,15 @@
 DEP= ../raytrace.c ../grid2.c ../atela.c ../dynamic.c ../interface2d.c ../layer2d.c ../model2d.c
 TESTS=test_hubral.x
 EXP=test_model3 test_model4
+FILES=betas.rsf rnips.rsf m0s.rsf t0s.rsf
+
+define EXPERIMENT
+	mkdir -p $(1)/$(2)/cre $(1)/$(2)/cds
+	scons -C $(1) nit=200 cds=n
+	cd $(1); for f in $(FILES) $(notdir $(wildcard $(1)/otsemb_* $(1)/vspline_* $(1)/zspline*)); do <$$f sfput --out=stdout > $(2)/cre/$$f; done
+	scons -C $(1) nit=200 cds=y
+	cd $(1); for f in $(FILES) $(notdir $(wildcard $(1)/otsemb_* $(1)/vspline_* $(1)/zspline*)); do <$$f sfput --out=stdout > $(2)/cds/$$f; done
+endef
 
 all:	test exp
 
@@ -31,5 +40,8 @@ test_model3:	model3/SConstruct
 
 test_model4:	model4/SConstruct
 	scons -C model4 nit=200 inverted-original.view
+
+fullexp:	model4
+	$(foreach expdir,$^,$(call EXPERIMENT,$(expdir),exp_$(shell date +%d-%m-%Y)))
 
 .PHONY:	$(TESTS)
