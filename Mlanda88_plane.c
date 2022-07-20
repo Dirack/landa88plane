@@ -87,6 +87,8 @@ int main(int argc, char* argv[])
 	sf_file vspline; // Layers velocity (output)
 	sf_file datafile; // Prestack data A(m,h,t)
 	sf_file otsemb_file; // Optimized semblance
+	sf_file otrnip_file;
+	sf_file otbeta_file;
 
 	sf_init(argc,argv);
 
@@ -103,6 +105,8 @@ int main(int argc, char* argv[])
 	betas = sf_input("betas");
 	datafile = sf_input("data");
 	otsemb_file = sf_output("otsemb");
+	otrnip_file = sf_output("otrnip");
+	otbeta_file = sf_output("otbeta");
 
 	/* Velocity model: get 2D grid parameters */
 	if(!sf_histint(vel,"n1",n)) sf_error("No n1= in input");
@@ -296,6 +300,8 @@ int main(int argc, char* argv[])
 				for(im=0;im<ns;im++){
 					ots[im][0]=s[im][0];
 					ots[im][1]=s[im][1];
+					otrnip[im]=RNIP[im];
+					otbeta[im]=BETA[im];
 					sf_warning("RNIP=%f BETA=%f",otrnip[im],otbeta[im]);
 				}
 				for(im=0;im<nsv;im++)
@@ -351,4 +357,16 @@ int main(int argc, char* argv[])
 
 	/* Write semblance evolution */
 	sf_floatwrite(otsemb,nit,otsemb_file);
+
+       /* Write optimized parameters */
+        sf_putint(otrnip_file,"n1",ns);
+        sf_putint(otrnip_file,"n2",1);
+        sf_putfloat(otrnip_file,"d1",1);
+        sf_putfloat(otrnip_file,"o1",0);
+        sf_floatwrite(otrnip,ns,otrnip_file);
+        sf_putint(otbeta_file,"n1",ns);
+        sf_putint(otbeta_file,"n2",1);
+        sf_putfloat(otbeta_file,"d1",1);
+        sf_putfloat(otbeta_file,"o1",0);
+        sf_floatwrite(otbeta,ns,otbeta_file);
 }
