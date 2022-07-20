@@ -52,7 +52,9 @@ int main(int argc, char* argv[])
 	float *m0; // CMP's for normal rays
 	float *t0; // t0's for normal rays
 	float *RNIP; // Rnip parameters vector
+	float *rnip; // RNIP tmp vector
 	float *BETA; // Beta parameters vector
+	float *beta; // Beta tmp vector
 	float *otrnip; // RNIP optimized
 	float *otbeta; // Beta optimized
 	float *otsemb; // Semblance optimized
@@ -204,8 +206,10 @@ int main(int argc, char* argv[])
 	t0 = sf_floatalloc(ns);
 	sf_floatread(t0,ns,t0s);
 	RNIP = sf_floatalloc(ns);
+	rnip = sf_floatalloc(ns);
 	sf_floatread(RNIP,ns,rnips);
 	BETA = sf_floatalloc(ns);
+	beta = sf_floatalloc(ns);
 	otrnip = sf_floatalloc(ns);
 	otbeta = sf_floatalloc(ns);
 	otsemb = sf_floatalloc(nit);
@@ -292,7 +296,7 @@ int main(int argc, char* argv[])
 
 			/* Forward modeling */
 			// TODO change tmis variable name to semb (Semblance)
-			tmis=forwardModeling(s,v0,t0,m0,RNIP,BETA,n,o,d,slow,a,ns,data,data_n,data_o,data_d,itf,cnewv,nsv,sz,nsz,osz,dsz,otrnip,otbeta,cds);
+			tmis=forwardModeling(s,v0,t0,m0,RNIP,BETA,n,o,d,slow,a,ns,data,data_n,data_o,data_d,itf,cnewv,nsv,sz,nsz,osz,dsz,rnip,beta,cds);
 		
 			if(fabs(tmis) > fabs(tmis0) ){
 				otmis = fabs(tmis);
@@ -300,8 +304,8 @@ int main(int argc, char* argv[])
 				for(im=0;im<ns;im++){
 					ots[im][0]=s[im][0];
 					ots[im][1]=s[im][1];
-					otrnip[im]=RNIP[im];
-					otbeta[im]=BETA[im];
+					otrnip[im]=rnip[im];
+					otbeta[im]=beta[im];
 					sf_warning("RNIP=%f BETA=%f",otrnip[im],otbeta[im]);
 				}
 				for(im=0;im<nsv;im++)
