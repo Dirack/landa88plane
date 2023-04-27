@@ -403,7 +403,7 @@ performed in obtained ray trajectory to calculate RNIP and BETA angle.
 	float semb;
 	float tt;
 	int k;
-	float rr[3]={1,1.95,2.01};
+	float rr[3]={1.1,1.98,2.};
 
 	x = sf_floatalloc(2);
 
@@ -432,7 +432,7 @@ performed in obtained ray trajectory to calculate RNIP and BETA angle.
 			//if(rnip<0.)
 			//sf_warning("rnip=%f beta=%f m0=%f t0=%f z=%f x=%f",rnip,beta,traj[it][1],2*it*dt,s[is][0],s[is][1]);
 			//if(fabs(rnip-rr[itf])<0.5){
-			if(rnip>0.3 && rnip<5.){
+			if(rnip>0.3 && rnip<rr[itf]){
 				semb=0.;
 				for(k=0;k<31;k++){
 					tt = (2*it*dt)+(k-16)*dt;
