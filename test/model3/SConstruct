@@ -3,10 +3,10 @@
 #
 # SConstruct (Python3)
 # 
-# Purpose: Full velocity inversion with NIP tomography.
+# Purpose: Full velocity inversion with tomography.
 # Velocity model with plane interfaces.
 # 
-# Site: https://dirack.github.io
+# Site: https://www.geofisicando.com
 # 
 # Version 1.0
 # 
@@ -16,16 +16,50 @@
 # 
 # License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 
-import os
+__author__="Rodolfo Dirack <rodolfo_profissional@hotmail.com>"
+__version__="1.0"
+__site__="https://www.geofisicando.com"
+
+Help('''
+    Depth velocity model inversion using tomography
+    ===============================================
+    (For plane Interfaces)
+
+    Author: %s
+    Version: %s
+    Site: %s
+    ''' % (__author__,__version__,__site__))
 
 # Madagascar Package
 from rsf.proj import *
 
 # Madagascar Recipes
 from rsf.recipes.pefInterpolation import pefInterpolation as pef
-from rsf.recipes.kimodel import multiLayerModel as mlmod
+from rsf.recipes.kimodel import multiLayerModelBuild as mlmod
 from rsf.recipes.kimodel import kirchhoffNewtonModeling as kinewmod
-from rsf.recipes.kimodel import arr2str
+from rsf.recipes.utils import arr2str, Pull, velplot
+
+# Search Window
+minvel=[1.45,1.60,1.7,2.0]
+maxvel=[1.65,2.,2.,2.5]
+tryvel=[1.46,1.62,1.8]
+
+# Velocity inversion parameters
+cds = ARGUMENTS.get('cds','n') # Use CDS instead of CRE traveltime curve
+ni = int(ARGUMENTS.get('ni',1)) # Number of iterations in inversion loop
+nit = int(ARGUMENTS.get('nit',100)) # Number of iterations in tomography
+nitf = int(ARGUMENTS.get('nitf',2)) # Number of interfaces
+model = 'model_0' # Constant velocity model
+
+helpstr="Model with %d plane interfaces\nVelocity Window Search (km/s):\n" % (len(tryvel)-1)
+for i in range(len(tryvel)-1):
+    helpstr += "\tInterface %d - %.2f to %.2f - First velocity %.2f\n" % (i,minvel[i],maxvel[i],tryvel[i])
+
+Help('''
+### Velocity inversion using tomography ###
+
+%s
+''' % (helpstr))
 
 # Main Files
 trueModel='trueModel'
@@ -33,63 +67,10 @@ stackedSection='stackedSection'
 parametersCube='parametersCube'
 interpolatedDataCube='interpolatedDataCube'
 
-SRCDIR = os.getenv('RSFSRC')+'/user/creGatherStack/experiments/constLayersModels/model3/backup/'
-
-Flow(interpolatedDataCube,SRCDIR+interpolatedDataCube+'.rsf','put --out=stdout')
-Flow(parametersCube,SRCDIR+parametersCube+'.rsf','put --out=stdout')
-Flow(stackedSection,SRCDIR+stackedSection+'.rsf','put --out=stdout')
-
-# Original velocity model
-xmax = 6.0
-zmax = 4.0
-
-layers = ((1.00,1.00,1.00,1.00),
-          (1.85,1.85,1.85,1.85))
-
-velocities = (1.508,
-              1.690,
-              2.0)
-
-### Modeling ###
-
-# Generate multi layer model
-mlmod(interfaces='interfaces',
-        dipsfile='interfacesDip',
-        modelfile=trueModel,
-        xmax=xmax,
-        zmax=zmax,
-        layers=layers,
-        velocities=velocities)
-
-# plot the original velocity model
-Result(trueModel,
-	'''
-	grey color=j scalebar=y label1=Depth unit1=km
-	label2=Position unit2=km barlabel=Velocity barunit=km/s
-	barreverse=y title="Velocity Model - Plane Interfaces" allpos=yi bias=1.0
-	''')
-
-# VFSA Parameters
-v0 = float(ARGUMENTS.get('v0',1.5))
-ot0 = float(ARGUMENTS.get('ot0',1.0))
-dt0 = float(ARGUMENTS.get('dt0',0.008))
-nt0 = int(ARGUMENTS.get('nt0',251))
-om0 = float(ARGUMENTS.get('om0',1.5))
-dm0 = float(ARGUMENTS.get('dm0',0.025))
-nm0 = int(ARGUMENTS.get('nm0',121))
-aperture = int(ARGUMENTS.get('aperture',30))
-cds = ARGUMENTS.get('cds','n')
-
-### velocity inversion using NIP tomography ###
-
-ni = int(ARGUMENTS.get('ni',1)) # Number of iterations in inversion loop
-nit = int(ARGUMENTS.get('nit',100)) # Number of iterations in tomography
-nitf = int(ARGUMENTS.get('nitf',2)) # Number of interfaces
-model = 'model_0' # Constant velocity model
-
-minvel=[1.45,1.60,1.7,2.0]
-maxvel=[1.65,2.,2.,2.5]
-tryvel=[1.46,1.62,1.8,2.0]
+# fetch files
+Pull([stackedSection,parametersCube,interpolatedDataCube,trueModel],
+        path=os.environ.get('RSFSRC')+
+        '/user/creGatherStack/experiments/constLayersModels/model3/backup/')
 
 Flow('sz_2',None,'math output="1" n1=21 d1=0.5 o1=-2 n2=2')
 sz='sz_2'
@@ -108,26 +89,16 @@ Flow(sv,'sv_2.asc',
 	'''
 	dd type=float form=native
 	''')
-
-# Generate multi layer model
-mlmod(interfaces='interfaces',
-        dipsfile='interfacesDip',
-        modelfile=trueModel,
-        xmax=xmax,
-        zmax=zmax,
-        layers=layers,
-        velocities=velocities)
-
 picks=[]
-for i in range(2):
-	Flow('pick'+str(i)+'.txt',stackedSection,'ipick')
+for i in range(nitf):
+	Flow('pick'+str(i)+'.txt',parametersCube,'window n3=1 f3=3 | ipick color=j title="Pick-interface-%d"' %i)
 	picks.append('pick'+str(i)+'.txt')
 	files=['t0s'+str(i),'m0s'+str(i)]
-	k=1
+	k=0
 	for f in files:
 		Flow(f+'.asc','pick'+str(i)+'.txt',
 		'''
-		./ascFormat.sh ${TARGETS} %d
+		pick2asc ${TARGETS} %d
 		''' % k)
 
 		Flow(f,f+'.asc','dd type=float form=native | put n2=1 d2=1 o2=0')
@@ -187,16 +158,16 @@ Flow('interfaces_spline',zspline,
 
 velinv = 'velinv_res'
 
-Flow(velinv,[sv,'interfaces_spline'],'modelbuild nz=301 dz=0.01 oz=0 sz=${SOURCES[1]}')
+Flow(velinv,[sv,'interfaces_spline'],'modelbuild nz=301 dz=0.01 oz=0 sz=${SOURCES[1]} | put label1=Depth label2=Distance unit1="km/s" unit2="km/s"')
 
 ### Plot results ####
 Flow('pick.txt',picks,'/usr/bin/cat $SOURCES')
 files=['t0s','m0s']
-i=1
+i=0
 for f in files:
 	Flow(f+'.asc','pick.txt',
 	'''
-	./ascFormat.sh ${TARGETS} %d
+	pick2asc ${TARGETS} %d
 	'''%i)
 
 	Flow(f,f+'.asc','dd type=float form=native | put n2=1 d2=1 o2=0')
@@ -232,36 +203,17 @@ Flow(['ray2','nipangles2'],[velinv,'shotsfile','anglefile','t0s'],
 
 Flow('result','ray2','sfdd type=float')
 
-# Plot inverted velocity model with NIP sources
-Plot('velocityModel',velinv,
-	'''
-	grey color=j scalebar=y barreverse=y bias=1.508 title="Inverted velocity model" barlabel="Velocity" barunit="Km/s" min2=1 max2=5
-	''')
+Plot('velocityModel',velinv,velplot("Inverted velocity model",param="max1=3 min1=0 min2=1 max2=5"))
 
 Plot('inverted-nipsources','ray2','sfgraph scalebar=y symbol=+ transp=y yreverse=y max1=3 min1=0 min2=1 max2=5 wanttitle=n wantaxis=n plotcol=7 symbolsz=10')
 
 Plot('inverted-interfaces',['velocityModel','inverted-nipsources'],'Overlay')
 
-# Plot original velocity model
-Plot('mod1',trueModel,
-	'''
-	put label1=Depth unit1=Km label2=Position unit2=Km |
-	grey color=j scalebar=y barreverse=y bias=1.508 title="Original velocity model" barlabel="Velocity" barunit="Km/s" min1=0 max1=3 min2=1 max2=5
-	''')
+Plot(trueModel,velplot("Original velocity model",param="max1=3 min1=0 min2=1 max2=5"))
 
-Plot('mod1-img',['mod1','inverted-nipsources'],'Overlay')
+Plot('mod1-img',[trueModel,'inverted-nipsources'],'Overlay')
 
 # Plot result: Inverted and original models side by side
 Result('inverted-original',['inverted-interfaces','mod1-img'],'SideBySideIso')
-
-Plot('reference',None,'math output="1.5" n1=300 d1=0.01 o1=0 | graph max1=3 min1=0 max2=2.5 min2=1.4 plotcol=3 yreverse=y transp=y wantaxis=n dash=1')
-
-Plot('velnodes',vspline,'put o1=0 d1=0.5 | graph max1=3 yreverse=y min2=1.4 max2=2.5 min1=0 symbol=+ symbolsz=10 plotcol=2 transp=y wantaxis=n')
-
-Plot('trueProfile',trueModel,'window n2=1 f2=0 | graph yreverse=y min1=0 max1=3 max2=2.5 min2=1.4 transp=y')
-
-Plot('invProfile',velinv,'window n2=1 f2=0 | graph yreverse=y min1=0 max1=3 max2=2.5 min2=1.4 plotcol=1 wantaxis=n transp=y')
-
-Result('profile',['reference','trueProfile','velnodes','invProfile'],'Overlay')
 
 End()

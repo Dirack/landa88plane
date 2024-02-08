@@ -92,6 +92,13 @@ void setUp(){}
 
 void tearDown(){}
 
+void suiteSetUp(){
+	init();
+	init2();
+}
+
+int suiteTearDown(int n){};
+
 void test_getRNIPUsingHubralLawsInConstantVelocityModel()
 /*< For a constant velocity layer without interfaces, RNIP is simply equal to normal ray length
 (propagation law). So, this test propagates normal rays in the first layer only and calculates RNIP
@@ -350,8 +357,7 @@ using HUbral's transmission law through interface
 
 int main(int argc, char* argv[]){
 
-	init();
-	init2();
+	suiteSetUp();
         UNITY_BEGIN();
         RUN_TEST(test_getRNIPUsingHubralLawsInConstantVelocityModel);
         RUN_TEST(test_getRNIPUsingHubralLawsInConstantVelocityModelSecondLayer);
