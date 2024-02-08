@@ -1,0 +1,10 @@
+*.rsf
+*.vpl
+.sconsign
+*.o
+*.asc
+*.txt
+*.h
+sflanda88_plane
+test/model4/otbeta
+test/model4/otrnip
